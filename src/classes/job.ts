@@ -34,6 +34,7 @@ import { Backoffs } from './backoffs';
 import { Scripts, raw2NextJobData } from './scripts';
 import { UnrecoverableError } from './errors/unrecoverable-error';
 import type { QueueEvents } from './queue-events';
+import SuperJSON from 'superjson-cjs';
 
 const logger = debuglog('bull');
 
@@ -320,7 +321,7 @@ export class Job<
     json: JobJsonRaw,
     jobId?: string,
   ): Job<T, R, N> {
-    const data = JSON.parse(json.data || '{}');
+    const data = SuperJSON.parse<T>(json.data || '{}');
     const opts = Job.optsFromJSON(json.opts);
 
     const job = new this<T, R, N>(
@@ -465,7 +466,9 @@ export class Job<
     return {
       id: this.id,
       name: this.name,
-      data: JSON.stringify(typeof this.data === 'undefined' ? {} : this.data),
+      data: SuperJSON.stringify(
+        typeof this.data === 'undefined' ? {} : this.data,
+      ),
       opts: this.optsAsJSON(this.opts),
       parent: this.parent ? { ...this.parent } : undefined,
       parentKey: this.parentKey,
